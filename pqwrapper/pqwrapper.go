@@ -2,12 +2,13 @@ package pqwrapper
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
 
-func Count(conn *sqlx.DB, query string, args ...interface{}) int64 {
+func Count(conn *sqlx.DB, query string, args ...any) int64 {
 	var id int64 = 0
 	err := conn.Get(&id, query, args...)
 	if err == nil {
@@ -16,8 +17,8 @@ func Count(conn *sqlx.DB, query string, args ...interface{}) int64 {
 	return 0
 }
 
-func SelectOne[R any](conn *sqlx.DB, query string, args ...interface{}) R {
-    var row R
+func SelectOne[R any](conn *sqlx.DB, query string, args ...any) R {
+	var row R
 	var rows []R
 	if err := conn.Select(&rows, query, args...); err != nil {
 		return row
@@ -28,7 +29,7 @@ func SelectOne[R any](conn *sqlx.DB, query string, args ...interface{}) R {
 	return row
 }
 
-func SelectList[R any](conn *sqlx.DB, query string, args ...interface{}) []R {
+func SelectList[R any](conn *sqlx.DB, query string, args ...any) []R {
 	var rows []R
 	if err := conn.Select(&rows, query, args...); err != nil {
 		return []R{}
@@ -39,24 +40,24 @@ func SelectList[R any](conn *sqlx.DB, query string, args ...interface{}) []R {
 	return []R{}
 }
 
-func Add(conn *sqlx.DB, query string, resultId any, args ...interface{}) (*sql.Tx, error) {
+func Create(conn *sqlx.DB, query string, dest []any, args ...any) (*sql.Tx, error) {
 	tx, err := conn.Begin()
 	if err != nil {
 		return tx, err
 	}
 
-	if err = tx.QueryRow(query, args...).Scan(&resultId); err != nil {
+	if err = tx.QueryRow(query, args...).Scan(dest...); err != nil {
 		return tx, err
 	}
 
 	return tx, nil
 }
 
-func Update(conn *sqlx.DB, query string, set string, params map[string]interface{}) (*sql.Tx, error) {
+func Update(conn *sqlx.DB, query string, set string, params map[string]any) (*sql.Tx, error) {
 	tx, err := conn.Begin()
 
 	if set == "" {
-		return tx, fmt.Errorf("%s", "Is not data to update")
+		return tx, errors.New("Is not data to update")
 	}
 	query = fmt.Sprintf(query, set[1:])
 
@@ -81,13 +82,13 @@ func Update(conn *sqlx.DB, query string, set string, params map[string]interface
 	}
 
 	if row <= 0 {
-		return tx, fmt.Errorf("%s", "Cannot add or update a child row")
+		return tx, errors.New("Cannot update a child row")
 	}
 
 	return tx, nil
 }
 
-func Delete(conn *sqlx.DB, query string, args ...interface{}) (*sql.Tx, error) {
+func Delete(conn *sqlx.DB, query string, args ...any) (*sql.Tx, error) {
 	tx, err := conn.Begin()
 	if err != nil {
 		return tx, err
@@ -104,7 +105,7 @@ func Delete(conn *sqlx.DB, query string, args ...interface{}) (*sql.Tx, error) {
 	}
 
 	if row <= 0 {
-		return tx, fmt.Errorf("%s", "Cannot add or update a child row")
+		return tx, errors.New("Cannot delete a child row")
 	}
 
 	return tx, nil

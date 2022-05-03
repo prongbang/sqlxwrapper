@@ -11,29 +11,35 @@ go get github.com/prongbang/sqlxwrapper
 - Count
 
 ```go
-pqwrapper.Count(conn, query, args...)
+count := pqwrapper.Count(conn, query, args...)
 ```
 
 - Select List
 
 ```go
-pqwrapper.SelectList[Type](conn, query, args...)
+typs := pqwrapper.SelectList[Type](conn, query, args...)
 ```
 
 - Select One
 
 ```go
-pqwrapper.SelectOne[Type](conn, query, args...)
+typ := pqwrapper.SelectOne[Type](conn, query, args...)
+```
+
+- Create
+
+```go
+tx, err := pqwrapper.Create(conn, query, []any{&data.ID}, data.Name)
 ```
 
 - Update
 
 ```go
-pqwrapper.Update(conn, query, set, args...)
+tx, err := pqwrapper.Update(conn, query, set, args...)
 ```
 
 - Delete
 
 ```go
-pqwrapper.Delete(conn, query, args...)
+tx, err := pqwrapper.Delete(conn, query, args...)
 ```
