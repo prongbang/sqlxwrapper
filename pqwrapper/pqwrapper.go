@@ -17,14 +17,15 @@ func Count(conn *sqlx.DB, query string, args ...interface{}) int64 {
 }
 
 func SelectOne[R any](conn *sqlx.DB, query string, args ...interface{}) R {
+    var row R
 	var rows []R
 	if err := conn.Select(&rows, query, args...); err != nil {
-		return R{}
+		return row
 	}
 	if len(rows) > 0 {
 		return rows[0]
 	}
-	return R{}
+	return row
 }
 
 func SelectList[R any](conn *sqlx.DB, query string, args ...interface{}) []R {
