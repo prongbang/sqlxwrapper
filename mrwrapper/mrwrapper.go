@@ -55,6 +55,7 @@ func Create(conn *sqlx.DB, query string, dest []any, args ...any) (*sql.Tx, erro
 	if err == nil {
 		return tx, nil
 	}
+	_ = tx.Rollback()
 	return tx, errExeFail
 }
 
@@ -79,6 +80,7 @@ func Update(conn *sqlx.DB, query string, set string, params map[string]any) (*sq
 
 	rs, err := tx.Exec(query, args...)
 	if err != nil {
+		_ = tx.Rollback()
 		return tx, errExeFail
 	}
 
@@ -99,6 +101,7 @@ func Delete(conn *sqlx.DB, query string, args ...any) (*sql.Tx, error) {
 
 	rs, err := tx.Exec(query, args...)
 	if err != nil {
+		_ = tx.Rollback()
 		return tx, errExeFail
 	}
 
